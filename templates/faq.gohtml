@@ -1,0 +1,16 @@
+{{template "header" .}}
+
+<div style="background-color: lightgray;padding:10px">
+    {{range .}}
+    {{template "faq" .}}
+    {{end}}
+
+</div>
+
+
+{{define "faq"}}
+<b>{{.Question}}</b>
+<p>{{.Answer}}</p>
+{{end}}
+
+{{template "footer" .}}
