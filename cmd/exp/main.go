@@ -2,11 +2,19 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"net/http"
 )
 
 func main() {
-	for i, arg := range os.Args {
-		fmt.Println(i, arg)
+	cookie := http.Cookie{
+		Name:     "exampleCookie",
+		Value:    "Hello world!",
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
 	}
+
+	fmt.Println(cookie)
 }

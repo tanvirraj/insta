@@ -30,20 +30,24 @@ import (
 // }
 
 type Users struct {
-	Template struct {
-		New Template
+	Templates struct {
+		New    Template
+		SignIn Template
 	}
 
 	UserService *models.UserService
 }
 
 func (u Users) New(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("\n\n")
-	fmt.Println("Hellow this is from New controller")
-	fmt.Printf("\n\n")
-	u.Template.New.Excute(w, nil)
+
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	u.Templates.New.Execute(w, r, data)
 
 }
+
 func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
@@ -56,4 +60,49 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, "user created : %w", user)
 
+}
+
+func (u Users) SignIn(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	u.Templates.SignIn.Execute(w, r, data)
+
+}
+
+func (u Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email    string
+		Password string
+	}
+	data.Email = r.FormValue("email")
+	data.Password = r.FormValue("password")
+	user, err := u.UserService.Authenticate(data.Email, data.Password)
+
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	cookie := http.Cookie{
+		Name:  "email",
+		Value: user.Email,
+		Path:  "/",
+	}
+
+	http.SetCookie(w, &cookie)
+	fmt.Fprintf(w, "user details : %+v", user)
+
+}
+
+func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
+	email, err := r.Cookie("email")
+	if err != nil {
+		fmt.Fprint(w, "The email cookkie could not be read")
+		return
+	}
+	fmt.Fprintf(w, "Email Cokkie: %s\n", email.Value)
+	fmt.Fprintf(w, "Heder  %+v\n", r.Header)
 }
