@@ -42,7 +42,6 @@ func (us *UserService) Create(email, password string) (*User, error) {
 
 	// hashedBytes is byte slice, we need to convert it into string to save in DB
 	passwordHash := string(hashedBytes)
-
 	user := User{
 		Email:        email,
 		PasswordHash: passwordHash,
@@ -64,13 +63,8 @@ func (us *UserService) Authenticate(email, password string) (*User, error) {
 	user := User{
 		Email: email,
 	}
-
 	row := us.DB.QueryRow(` select id, password_hash from users where email=$1 `, email)
-
-	fmt.Printf("row: %+v", row)
-
 	err := row.Scan(&user.ID, &user.PasswordHash)
-
 	if err != nil {
 		return nil, fmt.Errorf("authenticate: %w", err)
 	}

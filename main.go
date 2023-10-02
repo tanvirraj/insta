@@ -27,9 +27,6 @@ func main() {
 	tpl = views.Must(views.ParseFs(templates.FS, "faq.gohtml", "tailwind.gohtml"))
 	r.Get("/faq", controllers.FAQ(tpl))
 
-
-
-
 	cfg := models.DefaultPostgresConfig()
 	db, err := models.Open(cfg)
 
@@ -42,33 +39,33 @@ func main() {
 		DB: db,
 	}
 
-	userC := controllers.Users{
-		UserService: &userService,
+	sessionService := models.SessionService{
+		DB: db,
 	}
 
-
+	userC := controllers.Users{
+		UserService:    &userService,
+		SessionService: &sessionService,
+	}
 
 	userC.Templates.New = views.Must(views.ParseFs(templates.FS, "signup.gohtml", "tailwind.gohtml"))
 
 	userC.Templates.SignIn = views.Must(views.ParseFs(templates.FS, "signin.gohtml", "tailwind.gohtml"))
 
-
 	r.Get("/signup", TimerMiddleware(userC.New))
 	r.Get("/signin", userC.SignIn)
 	r.Post("/signin", userC.ProcessSignIn)
+	r.Post("/signout", userC.ProcessSignOut)
 	r.Post("/users", userC.Create)
-	r.Get("/user/me", TimerMiddleware(userC.CurrentUser))
-
+	r.Get("/users/me", userC.CurrentUser)
 
 	CsrfMw := csrf.Protect([]byte("qazxswedctgbyhnujmiklopQAZWSXEDC"), csrf.Secure(false))
-
 
 	fmt.Printf("Starting to server at :3030....")
 	log.Fatal(http.ListenAndServe(":3030", CsrfMw(r)))
 }
 
-
-//custom middleware
+// custom middleware
 func TimerMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

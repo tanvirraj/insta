@@ -2,19 +2,14 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"slices"
 )
 
 func main() {
-	cookie := http.Cookie{
-		Name:     "exampleCookie",
-		Value:    "Hello world!",
-		Path:     "/",
-		MaxAge:   3600,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	}
+	seq := []int{0, 1, 12, 3, 5, 8}
+	seq = slices.DeleteFunc(seq, func(n int) bool {
+		return n%2 != 0 // delete the odd numbers
+	})
 
-	fmt.Println(cookie)
+	fmt.Println(seq)
 }
